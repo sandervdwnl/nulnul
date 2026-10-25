@@ -57,7 +57,12 @@ Deze instellingen staan uit het zicht, want **het antwoord van de app moet zonde
 
 ## 3. De berekening
 
-Volledig client-side, gebaseerd op de formules die het team gedestilleerd heeft uit dough00 en gangbare napolitaanse naslagwerken. De exacte waarden zijn verbeterpunten en nog in te stellen, maar dit is het uitgangspunt:
+Volledig client-side, gebaseerd op **openbare, citeerbare bronnen** (zie §3.5):
+
+1. **November's Baker's Yeast Percentages chart** — hét publieke referentiewerk voor gistpercentage × fermentatietijd × temperatuur (pizzamaking.com, 2012, vrij gepubliceerd voor de community)
+2. **AVPN disciplinare (2024)** — de officiële norm voor de Vera Pizza Napoletana
+
+De exacte waarden zijn verbeterpunten en nog in te stellen, maar dit is het uitgangspunt:
 
 ### 3.1 Bolgewicht per diameter (napolitaans, incl. cornicione)
 
@@ -73,6 +78,8 @@ Volledig client-side, gebaseerd op de formules die het team gedestilleerd heeft 
 
 Tussenliggende diameters: lineaire interpolatie.
 
+*Kader:* de AVPN-norm zegt 200-280 g per bol — onze tabel valt daar binnen (vanaf 24 cm); de kleine maten zijn bewust lichter.
+
 ### 3.2 Baker's percentages (napolitaans)
 
 - Bloem = 100%
@@ -85,26 +92,35 @@ Totale deegmassa = som × (bolgewicht × aantal bollen), terugrekenen naar bloem
 
 ### 3.3 Gistberekening (de kern van de app)
 
-Gistpercentage wordt **afgeleid uit tijd en temperatuur** — de gebruiker hoeft niets te weten:
+Gistpercentage wordt **afgeleid uit tijd en temperatuur** — de gebruiker hoeft niets te weten.
 
-```text
-timeFactor = (6 / max(fermentatieUren, 1)) ^ 0,8
-tempFactor = max(1 + (kamertempC − 21) × 0,04 ; 0,2)
-gistPct    = 0,5 × timeFactor / tempFactor
+**Aanpak: tabel + interpolatie, geen zelfverzonnen formule.** We gebruiken **November's Baker's Yeast Percentages chart** als datamodel: een publieke tabel met instant-drooggist-, actieve-drooggist- en verse-gist-percentages per temperatuur (35-99°F / ~2-37°C) per fermentatietijd (3 uur t/m 7 dagen). We digitaliseren de tabel als CSV in de repo en interpoleren bilineair tussen punten. Voordelen:
 
-// correcties:
-koelkastfermentatie      → gistPct × 0,3
-verse gist               → × 3,0
-actieve drooggist        → × 1,2
-instant drooggist        → × 1,0
-clamp tussen 0,01 en 2,0 %
-```
+- **Traceerbaar en eerlijk** — publiek bronmateriaal, correcte attributie, geen reverse-engineering van andermans app
+- **Transparant** — de tabel is leesbaar/verifieerbaar; een curve-fit is een black box
+- **Direct per gisttype** — de tabel geeft IDY, ADY en verse gist apart, dus geen omrekenfactoren nodig (minder foutgevoelig)
+- De tabel dekt vanzelf het volledige domein, incl. koelkasttemperaturen (4-8°C bij lange rijping)
 
-Voor de volledige 24/48-uurs-schema's: 4 uur op kamertemperatuur (bulk), rest in de koelkast.
+Voor de koelkast-schema's (24/48 uur): 4 uur bulk op kamertemperatuur, rest op koelkasttemperatuur (±5°C) — twee tabelfetches, sommeer de gistactiviteit. Eerste orde benadering: `1/y1 + 1/y2`-regels via de tabel valideren bij M1; anders valt het terug op de tabelperiode die het dichtst bij het totale "equivalent-hours"-antwoord ligt.
+
+**Validatie:** de uitkomsten checken we tegen de AVPN-disciplinare (gist 0,1-3 g per liter water) en een handvol eigen bakexperimenten. Als we later wél een gesloten formule willen (voorcompact, sneller), fitten we die zelf aan de tabel en documenteren we de fit — nooit andersom.
 
 ### 3.4 Water-temperatuur (optioneel nice-to-have)
 
 Doeldeegtemperatuur ~23°C. `waterTemp = doeldeegTemp − bloemTemp − frictie (°C)` — in v2, alleen tonen als er een mixer-tijd ingevoerd kan worden zonder extra vraag (anders: advies "lauw water als het koud is in huis").
+
+### 3.5 Bronnen & licenties
+
+Alle rekenmodellen zijn gebaseerd op openbaar bronmateriaal:
+
+| Bron | Wat we gebruiken | Licentie/positie |
+|---|---|---|
+| **November's Baker's Yeast Percentages chart** (pizzamaking.com, 2012) | Gistpercentages per tijd × temperatuur, per gisttype | Vrij gepubliceerd voor community-gebruik; we attribueren in de app en repo |
+| **AVPN disciplinare 2024, §2.1.2-2.1.4** ([pizzanapoletana.org](https://www.pizzanapoletana.org)) | Hydratatie 55,6-62,5%, zout 2,22-3,75%, verse gist 0,1-3 g/l water, droog:vers = 1:3, bollen 200-280 g, rijping 12-24 uur, kast 18-20°C | Officiële publieke norm — smaak- en validatiekader |
+| **np-dough** ([github.com/fnberta/np-dough](https://github.com/fnberta/np-dough), MIT) | Digitale versie van November's tabel (`raw-values.csv`) + interpolatie-idee | MIT — data mag overgenomen worden met attributie |
+| **knead-time** ([github.com/JanWelker/knead-time](https://github.com/JanWelker/knead-time), Apache-2.0) | Referentie-implementatie gistmodel + Q10-temperatuurbenadering + AVPN-testen | Apache-2.0 — als referentie/inspiratie; eventuele overgenomen code wordt met attributie vermeld |
+
+**Uitgangspunt:** we publiceren nulnul zelf ook als open-source (MIT) en vermelden de bronnen prominent — zowel in de repo als in een "bronnen"-sectie in de app. Zo is elke berekening controleerbaar en levert de app bovendien wat terug aan de community.
 
 ---
 
@@ -209,7 +225,9 @@ nulnul/
 ```
 
 ### Wat we nodig hebben (checklist)
-- [x] Formules uit dough00 gedestilleerd (done — zie §3)
+- [x] Openbare bronnen voor de rekenmodellen gevonden (done — November-tabel + AVPN, zie §3.5)
+- [ ] November's tabel digitaliseren als CSV (basis: np-dough's MIT-raw-values.csv, ná eigen verificatie tegen het origineel)
+- [ ] Gistmodel in unit tests vastpinnen tegen AVPN-norm + referentiepunten uit de tabel
 - [ ] Logo + iconen (192, 512, maskable, favicon, splash) — ontwerpen of AI-genereren
 - [ ] Fontkeuze definitief (Fraunces vs. alternatieven, met self-hosting voor offline PWA)
 - [ ] Bolgewicht-tabel valideren (§3.1) tegen eigen bakervaring
