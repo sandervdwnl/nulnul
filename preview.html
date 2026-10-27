@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nulnul | Pizza Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #D4AF37;
+      --primary-dark: #B8860B;
+      --secondary: #8B0000;
+      --background: #121212;
+      --surface: #1E1E1E;
+      --text: #F5F5F5;
+      --text-secondary: #B0B0B0;
+      --accent: #FF6B6B;
+      --success: #4CAF50;
+      --border: rgba(212, 175, 55, 0.2);
+      --shadow: 0 4px 20px rgba(212, 175, 55, 0.1);
+      --card-bg: #1E1E1E;
+      --input-bg: rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="light"] {
+      --primary: #C4952F;
+      --primary-dark: #A67C25;
+      --secondary: #6B0000;
+      --background: #FDFBF7;
+      --surface: #FFFFFF;
+      --text: #2C2C2C;
+      --text-secondary: #666666;
+      --accent: #FF8A80;
+      --success: #4CAF50;
+      --border: rgba(196, 149, 47, 0.2);
+      --shadow: 0 4px 20px rgba(196, 149, 47, 0.1);
+      --card-bg: #FFFFFF;
+      --input-bg: rgba(196, 149, 47, 0.05);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(ellipse at 10% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, rgba(139, 0, 0, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    [data-theme="light"] body::before {
+      background-image: 
+        radial-gradient(ellipse at 10% 20%, rgba(196, 149, 47, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, rgba(107, 0, 0, 0.08) 0%, transparent 50%);
+    }
+
+    .container {
+      max-width: 100%;
+      padding: 1rem;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        max-width: 600px;
+        padding: 2rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .container {
+        max-width: 800px;
+      }
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .pizza-icon {
+      font-size: 2.5rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: 1px;
+    }
+
+    .logo span {
+      color: var(--text);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .theme-toggle {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--primary);
+    }
+
+    .theme-toggle span {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .theme-toggle .icon {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .theme-toggle[data-theme="light"] .icon {
+      transform: rotate(180deg);
+    }
+
+    .subtitle {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Main Title */
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    h1 .highlight {
+      color: var(--primary);
+    }
+
+    .tagline {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-title::before {
+      content: "🍕";
+      font-size: 1.2rem;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .label-description {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      margin-top: 0.25rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+
+    input::-webkit-input-placeholder {
+      color: var(--text-secondary);
+    }
+
+    /* Range Slider */
+    .range-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .range-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .range-value {
+      min-width: 50px;
+      text-align: center;
+      font-weight: 600;
+      color: var(--primary);
+      background: rgba(212, 175, 55, 0.1);
+      padding: 0.5rem;
+      border-radius: 8px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    [data-theme="light"] .range-value {
+      background: rgba(196, 149, 47, 0.1);
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(212, 175, 55, 0.2);
+      border-radius: 3px;
+      outline: none;
+      transition: background 0.3s ease;
+    }
+
+    [data-theme="light"] input[type="range"] {
+      background: rgba(196, 149, 47, 0.2);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Checkbox */
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin-top: 0.25rem;
+      accent-color: var(--primary);
+    }
+
+    .checkbox-group label {
+      margin-bottom: 0;
+      font-weight: 400;
+    }
+
+    /* Buttons */
+    button {
+      width: 100%;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--background);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+    }
+
+    [data-theme="light"] button {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      box-shadow: 0 4px 15px rgba(196, 149, 47, 0.2);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+    }
+
+    [data-theme="light"] button:hover {
+      box-shadow: 0 6px 20px rgba(196, 149, 47, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Results */
+    .result {
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .result-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    .result-summary {
+      background: rgba(76, 175, 80, 0.1);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    [data-theme="light"] .result-summary {
+      background: rgba(76, 175, 80, 0.08);
+    }
+
+    .result-summary-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    .result-summary-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Result Sections */
+    .result-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .result-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .result-section-title::before {
+      content: "🍴";
+    }
+
+    .result-grid {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      transition: background 0.2s ease;
+    }
+
+    [data-theme="light"] .result-item {
+      background: rgba(196, 149, 47, 0.03);
+    }
+
+    .result-item:hover {
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    [data-theme="light"] .result-item:hover {
+      background: rgba(196, 149, 47, 0.08);
+    }
+
+    .result-label {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .result-value {
+      font-family: 'Inter', monospace;
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+
+    /* Baker's Percentages */
+    .bakers-percentages {
+      background: rgba(139, 0, 0, 0.08);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+      border: 1px solid rgba(139, 0, 0, 0.2);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    [data-theme="light"] .bakers-percentages {
+      background: rgba(107, 0, 0, 0.05);
+    }
+
+    .bakers-percentages-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.9rem;
+      color: var(--secondary);
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+    }
+
+    .bakers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .bakers-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    [data-theme="light"] .bakers-item {
+      background: rgba(196, 149, 47, 0.03);
+    }
+
+    .bakers-item:hover {
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .bakers-item-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .bakers-item-value {
+      font-weight: 600;
+      color: var(--secondary);
+      font-size: 1rem;
+    }
+
+    /* Notes */
+    .note {
+      background: rgba(212, 175, 55, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+      border-left: 3px solid var(--primary);
+      font-style: italic;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    [data-theme="light"] .note {
+      background: rgba(196, 149, 47, 0.05);
+    }
+
+    .note::before {
+      content: "💡 ";
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+
+    /* Responsive Adjustments */
+    @media (min-width: 600px) {
+      .range-container {
+        gap: 1.5rem;
+      }
+      
+      .result-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .bakers-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      
+      .header-right {
+        gap: 1.5rem;
+      }
+    }
+
+    /* Loading State */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(212, 175, 55, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Hidden by default */
+    #resultaat {
+      display: none;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--background);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    /* Transition for theme switch */
+    html {
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <div class="pizza-icon">🍕</div>
+        <div>
+          <div class="logo">nul<span>nul</span></div>
+          <div class="subtitle">L'Arte della Pizza Perfetta</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="theme-toggle" onclick="toggleTheme()" data-theme="dark">
+          <span class="icon">🌙</span>
+          <span id="themeText">Dark</span>
+        </div>
+      </div>
+    </header>
+
+    <h1>Pizza <span class="highlight">Calculator</span></h1>
+    <p class="tagline">Precieze berekeningen voor de perfecte deeg</p>
+
+    <div class="card">
+      <h2 class="card-title">Ingrediënten</h2>
+      
+      <div class="form-group">
+        <label for="diameter">Diameter</label>
+        <div class="range-container">
+          <input type="range" id="diameter" value="24" min="16" max="36" step="1" oninput="updateRangeValue(this, 'diameterValue')">
+          <span class="range-value" id="diameterValue">24</span>
+          <span>cm</span>
+        </div>
+        <p class="label-description">Kies de grootte van je pizza (16" - 36" cm)</p>
+      </div>
+
+      <div class="form-group">
+        <label for="aantal">Aantal Pizza's</label>
+        <select id="aantal">
+          <option value="1">1 pizza</option>
+          <option value="2">2 pizza's</option>
+          <option value="3">3 pizza's</option>
+          <option value="4">4 pizza's</option>
+          <option value="6">6 pizza's</option>
+          <option value="8">8 pizza's</option>
+          <option value="12">12 pizza's</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="bloemType">Bloem Type</label>
+        <select id="bloemType">
+          <option value="Tipo 00">Tipo 00 (Caputo Pizzeria)</option>
+          <option value="Tipo 00 canotto">Tipo 00 Canotto (Hoog randje)</option>
+          <option value="Tipo 0">Tipo 0</option>
+          <option value="Patentbloem">Patentbloem (Hoge eiwit)</option>
+          <option value="Nederlandse tarwebloem">Nederlandse Tarwebloem</option>
+        </select>
+        <p class="label-description">De beste resultaten met Tipo 00 of Patentbloem</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <h2 class="card-title">Fermentatie</h2>
+
+      <div class="form-group">
+        <label for="fermentatieTijd">Tijd</label>
+        <select id="fermentatieTijd">
+          <option value="4">4 uur (Snelle fermentatie)</option>
+          <option value="8">8 uur (Standaard)</option>
+          <option value="24" selected>24 uur (Optimale smaak)</option>
+          <option value="48">48 uur (Diepe smaakontwikkeling)</option>
+          <option value="72">72 uur (Gourmet)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="temperatuur">Temperatuur</label>
+        <div class="range-container">
+          <input type="range" id="temperatuur" value="22" min="10" max="30" step="1" oninput="updateRangeValue(this, 'temperatuurValue')">
+          <span class="range-value" id="temperatuurValue">22</span>
+          <span>°C</span>
+        </div>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="koelkastSchema">
+        <label>Gebruik koelkast-schema (4u kamer + rest koelkast)</label>
+      </div>
+
+      <div class="divider"></div>
+
+      <h2 class="card-title">Gist</h2>
+
+      <div class="form-group">
+        <label for="gistType">Type</label>
+        <select id="gistType">
+          <option value="IDY">Instant Drooggist (IDY)</option>
+          <option value="ADY">Actieve Drooggist (ADY)</option>
+          <option value="verse">Verse Gist</option>
+        </select>
+      </div>
+
+      <button onclick="berekenDeeg()">
+        <span>Bereken Recept</span>
+      </button>
+    </div>
+
+    <div class="card result" id="resultaat">
+      <div class="result-header">
+        <h2 class="result-title">Je Recept</h2>
+        <div class="result-summary">
+          <div class="result-summary-value" id="totalWeight">0 g</div>
+          <div class="result-summary-label">Totaal Deeg</div>
+        </div>
+      </div>
+
+      <div class="result-section">
+        <h3 class="result-section-title">Per Pizza</h3>
+        <div class="result-grid" id="perPizzaResults"></div>
+      </div>
+
+      <div class="result-section">
+        <h3 class="result-section-title">Totaal</h3>
+        <div class="result-grid" id="totaalResults"></div>
+      </div>
+
+      <div class="bakers-percentages">
+        <h4 class="bakers-percentages-title">Baker's Percentages</h4>
+        <div class="bakers-grid" id="bakersPercentages"></div>
+      </div>
+
+      <div class="note">
+        Gebruik een digitale keukenweegschaal voor de beste resultaten. Weeg alle ingrediënten afzonderlijk voor maximale precisie.
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Theme management
+    function getPreferredTheme() {
+      const stored = localStorage.getItem('theme');
+      if (stored) return stored;
+      return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      
+      const toggle = document.querySelector('.theme-toggle');
+      const text = document.getElementById('themeText');
+      const icon = toggle.querySelector('.icon');
+      
+      if (theme === 'light') {
+        toggle.setAttribute('data-theme', 'light');
+        text.textContent = 'Light';
+        icon.textContent = '☀️';
+      } else {
+        toggle.setAttribute('data-theme', 'dark');
+        text.textContent = 'Dark';
+        icon.textContent = '🌙';
+      }
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    }
+
+    // Initialize theme
+    setTheme(getPreferredTheme());
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+      if (!localStorage.getItem('theme')) {
+        setTheme(e.matches ? 'light' : 'dark');
+      }
+    });
+
+    // Update range input display
+    function updateRangeValue(input, valueId) {
+      document.getElementById(valueId).textContent = input.value;
+    }
+
+    // Laad de gecompileerde calculator modules
+    import { berekenDeeg } from './dist/calculator/index.js';
+    
+    // Maak berekenDeeg beschikbaar in globale scope
+    window.berekenDeeg = function() {
+      const diameter = parseFloat(document.getElementById('diameter').value);
+      const aantal = parseInt(document.getElementById('aantal').value);
+      const bloemType = document.getElementById('bloemType').value;
+      const fermentatieTijd = parseInt(document.getElementById('fermentatieTijd').value);
+      const temperatuur = parseFloat(document.getElementById('temperatuur').value);
+      const gistType = document.getElementById('gistType').value;
+      const koelkastSchema = document.getElementById('koelkastSchema').checked;
+      
+      const input = {
+        diameter,
+        aantal,
+        bloemType,
+        fermentatieTijd,
+        temperatuur,
+        gistType,
+      };
+      
+      // Voeg koelkast-schema toe als geselecteerd
+      if (koelkastSchema && fermentatieTijd > 4) {
+        input.koelkastTijd = fermentatieTijd - 4;
+        input.koelkastTemp = 5;
+      }
+      
+      const resultaat = berekenDeeg(input);
+      
+      // Toon resultaat
+      const resultaatDiv = document.getElementById('resultaat');
+      
+      resultaatDiv.style.display = 'block';
+      
+      // Update total weight
+      document.getElementById('totalWeight').textContent = `${resultaat.totaal.deeg.toFixed(1)} g`;
+      
+      // Per pizza results
+      const perPizzaHtml = `
+        <div class="result-item">
+          <span class="result-label">Diameter</span>
+          <span class="result-value">${diameter} cm</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Bolgewicht</span>
+          <span class="result-value">${resultaat.bolgewicht} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Bloem</span>
+          <span class="result-value">${resultaat.perBol.bloem} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Water</span>
+          <span class="result-value">${resultaat.perBol.water} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Zout</span>
+          <span class="result-value">${resultaat.perBol.zout} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Gist</span>
+          <span class="result-value">${resultaat.perBol.gist.toFixed(1)} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Totaal per bol</span>
+          <span class="result-value">${resultaat.perBol.totaal} g</span>
+        </div>
+      `;
+      document.getElementById('perPizzaResults').innerHTML = perPizzaHtml;
+      
+      // Totaal results
+      const totaalHtml = `
+        <div class="result-item">
+          <span class="result-label">Bloem</span>
+          <span class="result-value">${resultaat.totaal.bloem} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Water</span>
+          <span class="result-value">${resultaat.totaal.water} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Zout</span>
+          <span class="result-value">${resultaat.totaal.zout} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Gist</span>
+          <span class="result-value">${resultaat.totaal.gist.toFixed(1)} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Totaal deeg</span>
+          <span class="result-value">${resultaat.totaal.deeg.toFixed(1)} g</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Aantal ballen</span>
+          <span class="result-value">${aantal}</span>
+        </div>
+      `;
+      document.getElementById('totaalResults').innerHTML = totaalHtml;
+      
+      // Baker's percentages
+      const bakersHtml = `
+        <div class="bakers-item">
+          <div class="bakers-item-label">Bloem</div>
+          <div class="bakers-item-value">${resultaat.bakersPercentages.bloem}%</div>
+        </div>
+        <div class="bakers-item">
+          <div class="bakers-item-label">Water</div>
+          <div class="bakers-item-value">${resultaat.bakersPercentages.water}%</div>
+        </div>
+        <div class="bakers-item">
+          <div class="bakers-item-label">Zout</div>
+          <div class="bakers-item-value">${resultaat.bakersPercentages.zout}%</div>
+        </div>
+        <div class="bakers-item">
+          <div class="bakers-item-label">Gist</div>
+          <div class="bakers-item-value">${resultaat.bakersPercentages.gist.toFixed(2)}%</div>
+        </div>
+      `;
+      document.getElementById('bakersPercentages').innerHTML = bakersHtml;
+      
+      // Scroll naar resultaat
+      resultaatDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+  </script>
+</body>
+</html>

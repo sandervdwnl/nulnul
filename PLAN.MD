@@ -44,7 +44,7 @@ Een wizard van 5 stappen, één vraag per scherm, grote knoppen. Terug bladeren 
    - *Morgen* — 24 uur (deels koelkast)
    - *Weekend-planning* — 48 uur (koelkast, smaakbombonade)
 5. **Gist die je in huis hebt** — verse gist / instant drooggist / actieve drooggist (wordt omgerekend)
-6. **Hoe warm is het bij je?** — kamertemperatuur. Of: locatie-knop die via [Open-Meteo](https://open-meteo.com) (gratis, geen API-key) de buitentemperatuur ophaalt en als schatting voor de kamertemperatuur invult. Handmatig overschrijven mag altijd.
+6. **Hoe warm is het bij je?** — **kamertemperatuur handmatig invoeren** (seizoensverschillen maken locatie-temperatuur onbetrouwbaar).
 
 ### Fijnafstelling (optioneel, standaard ingeklapt)
 - Hydratatie ± (met uitleg "hoger = luchtiger, plakkeriger")
@@ -66,19 +66,19 @@ De exacte waarden zijn verbeterpunten en nog in te stellen, maar dit is het uitg
 
 ### 3.1 Bolgewicht per diameter (napolitaans, incl. cornicione)
 
-| Diameter | Bolgewicht |
-|---|---|
-| 16 cm | 140 g |
-| 20 cm | 170 g |
-| 24 cm | 210 g |
-| 26 cm | 230 g |
-| 28 cm | 250 g |
-| 32 cm | 290 g |
-| 36 cm | 320 g |
+| Diameter | Bolgewicht | Inch-equivalent |
+|---|---|---|
+| 16 cm | 140 g | ~6.3 inch |
+| 20 cm | 170 g | ~7.9 inch |
+| 24 cm | 210 g | ~9.4 inch |
+| 26 cm | 230 g | ~10.2 inch |
+| 28 cm | 250 g | ~11 inch |
+| 32 cm | 290 g | ~12.6 inch |
+| 36 cm | 320 g | ~14.2 inch |
 
 Tussenliggende diameters: lineaire interpolatie.
 
-*Kader:* de AVPN-norm zegt 200-280 g per bol — onze tabel valt daar binnen (vanaf 24 cm); de kleine maten zijn bewust lichter.
+*Kader:* de AVPN-norm zegt 200-280 g per bol — onze tabel valt daar binnen (vanaf 24 cm); de kleine maten zijn bewust lichter. *Bron:* 9-inch pizza ≈ 23 cm ≈ **200 gram** (bevestigd via [AVPN](https://www.pizzanapoletana.org) en [pizzamaking.com](https://www.pizzamaking.com)).
 
 ### 3.2 Baker's percentages (napolitaans)
 
@@ -252,13 +252,27 @@ nulnul/
 
 ## 10. Openstaande beslissingen
 
-1. **Stack:** vanilla TS+Vite (simpelste, kleinste bundle) vs. Svelte (snellere UI-bouw). Voorstel: vanilla — de app is klein genoeg, en "geen framework" is minimalistisch.
-2. **Bolgewicht-tabel:** klopt de curve uit §3.1 met de praktijkervaring van Sander? (dough00 gebruikt iets andere waarden; onze tabel moet gebaseerd zijn op eigen bakervaring)
-3. **Teveel-bollen-optie (vraag 2):** standaard 1 extra bol aanraden voor beginners? Of puur laten?
-4. **Taal:** NL-first bevestigd, EN/IT in v2?
-5. **Locatie-weerschatting:** direct actief bij eerste gebruik, of pas na expliciete knop ("privacy-first")?
-6. **Naam vast:** nulnul — definitief? (domeincheck volgt)
+1. **Stack:** ✅ **Vanilla TS + Vite** — gekozen voor minimalisme en kleine bundle.
+2. **Bolgewicht-tabel:** ✅ **Automatisch berekend** (geen invoer nodig). Maten gebaseerd op **inch → cm omrekening** voor gangbare formaten. *Broncheck:* 9-inch pizza ≈ 23 cm ≈ **200 gram** (bevestigd via [AVPN](https://www.pizzanapoletana.org) en [pizzamaking.com](https://www.pizzamaking.com)). Tabel in §3.1 aangevuld met inch-equivalenten.
+3. **Teveel-bollen-optie:** ❌ **Nee** — geen extra bol standaard aanraden.
+4. **Taal:** ✅ **NL-first** (bevestigd). EN/IT in v2.
+5. **Locatie-weerschatting:** ⚠️ **Handmatige invoer kamertemperatuur** — seizoensverschillen maken locatie-temperatuur onbetrouwbaar. Geen automatische Open-Meteo ophaling.
+6. **Naam vast:** ✅ **nulnul** — definitief.
 
 ---
 
 *Nulnul — perché la buona pizza comincia dalla farina.* 🍕
+
+---
+
+## 11. Doelgroep: Thuisbakker
+
+**Belangrijk:** Schrijf **altijd alternatieven uit** in het recept voor de thuisbakker. De doelgroep heeft niet altijd professionele tools.
+
+**Voorbeelden van alternatieven in recepten:**
+- *"Gebruik een keukenweegschaal (nauwkeuriger dan volume-maten)"*
+- *"Geen deegrol? Trek het deeg uit met je handen (zo blijft de lucht in de cornicione)"*
+- *"Geen pizza-steen? Gebruik een omgekeerde bakplaat of gietijzeren pan."*
+- *"Geen verse gist? Gebruik instant drooggist (1:3 verhouding)"*
+
+Dit zorgt voor **toegankelijkheid** zonder de napolitaanse principes te schenden.
